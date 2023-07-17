@@ -1191,6 +1191,8 @@ customElements.define('product-recommendations', ProductRecommendations);
   })
 })()
 
+
+// Add Handbag Get Jacket Bundle Feature
 class BundleProductAdd{
   constructor(){
     this.init()
@@ -1273,8 +1275,6 @@ class BundleProductAdd{
       .then((res) => {
         document.dispatchEvent(new Event("Cart:Clear"))
       })
-      
-
       document.querySelectorAll('.cart-item__name').forEach((item) => {
         if(item.textContent.includes("Soft Winter Jacket")){
             item.parentElement.parentElement.remove()
