@@ -63,11 +63,12 @@ if (!customElements.get('product-form')) {
               window.location = window.routes.cart_url;
               return;
             }
-
+            
             if (!this.error)
               publish(PUB_SUB_EVENTS.cartUpdate, { source: 'product-form', productVariantId: formData.get('id') });
             this.error = false;
             const quickAddModal = this.closest('quick-add-modal');
+            document.dispatchEvent(new Event("Cart:Added"))
             if (quickAddModal) {
               document.body.addEventListener(
                 'modalClosed',

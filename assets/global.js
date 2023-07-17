@@ -1167,3 +1167,123 @@ class ProductRecommendations extends HTMLElement {
 }
 
 customElements.define('product-recommendations', ProductRecommendations);
+
+// Hide Product Default Image when Variants Image Present
+(() => {
+  function hideDefaultImage(mediaContainer, hideParent){
+    let altImageValue = "default-hide"
+    document.querySelectorAll(`.${mediaContainer} img`).forEach((img) => {
+      if(img.alt === altImageValue && hideParent){
+          img.parentElement.style.display = "none"
+      }else if(img.alt === altImageValue && !hideParent){
+          img.style.display = "none"
+      }
+    })
+  }
+  hideDefaultImage("product__media", true)
+  hideDefaultImage("product-media-modal__content", false)
+
+  // If Unselected option available, select it by default
+  document.querySelectorAll("select option").forEach((option) => {
+    if(option.value === "Unselected"){
+      document.querySelector("select[name='options[Size]'").value = "Unselected"
+    }
+  })
+})()
+
+class BundleProductAdd{
+  constructor(){
+    this.init()
+    this.handbagVariantID = 45851624276270
+    this.bundleProductVariant = 45850288521518
+    this.isEligibleForBundle;
+    this.isBundleProductInCart;
+
+    this.fetchCart = this.fetchCart.bind(this)
+  }
+
+  init(){
+    this.addEventListener()
+  }
+
+  addEventListener(){
+    document.addEventListener('Cart:Added', this.fetchCart)
+    document.addEventListener('Cart:Updated', this.fetchCart)
+  }
+
+  fetchCart = () => {
+    console.log("triggered")
+    fetch(window.Shopify.routes.root + 'cart.js', {
+      method: 'GET'
+    })
+    .then(response => { 
+      return response.json();
+    })
+    .then(data => {
+      
+      data.items.forEach((item) => {
+        console.log(this, item, data)
+        if(item.id === this.handbagVariantID){
+          this.isEligibleForBundle = true
+        }else {
+          this.isEligibleForBundle = false
+        }
+
+        if(item.id === this.bundleProductVariant){
+          this.isBundleProductInCart = true;
+        }else {
+          this.isBundleProductInCart = false;
+        }
+      })
+      this.checkHandbag(data)
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    })
+  }
+
+  checkHandbag(data){
+    if(this.isEligibleForBundle && !this.isBundleProductInCart){
+      let formData = {
+        'items': [{
+         'id': this.bundleProductVariant,
+         'quantity': 1
+         }]
+       };
+       
+       fetch(window.Shopify.routes.root + 'cart/add.js', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(formData)
+       })
+       .then(response => {
+         return response.json();
+       })
+       .catch((error) => {
+         console.error('Error:', error);
+       });
+    }else if(!this.isEligibleForBundle) {
+      const body = JSON.stringify({
+        id: `${this.bundleProductVariant}`,
+        quantity: 0
+      });
+      fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
+      .then((res) => {
+        document.dispatchEvent(new Event("Cart:Clear"))
+      })
+      
+
+      document.querySelectorAll('.cart-item__name').forEach((item) => {
+        if(item.textContent.includes("Soft Winter Jacket")){
+            item.parentElement.parentElement.remove()
+        }
+     })
+
+     location.reload() 
+    }
+  }
+}
+
+new BundleProductAdd()
