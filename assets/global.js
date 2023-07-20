@@ -1224,7 +1224,7 @@ class BundleProductAdd{
     .then(data => {
       
       data.items.forEach((item) => {
-        console.log(this, item, data)
+        
         if(item.id === this.handbagVariantID){
           this.isEligibleForBundle = true
         }else {
@@ -1236,16 +1236,18 @@ class BundleProductAdd{
         }else {
           this.isBundleProductInCart = false;
         }
+
+        console.log(this.isEligibleForBundle, this.isBundleProductInCart)
       })
-      this.checkHandbag(data)
+      this.checkHandbag(data, this.isEligibleForBundle, this.isBundleProductInCart)
     })
     .catch((error) => {
       console.error('Error:', error);
     })
   }
 
-  checkHandbag(data){
-    if(this.isEligibleForBundle && !this.isBundleProductInCart){
+  checkHandbag(data, isEligibleForBundle, isBundleProductInCart){
+    if(isEligibleForBundle && !isBundleProductInCart){
       let formData = {
         'items': [{
          'id': this.bundleProductVariant,
@@ -1266,7 +1268,7 @@ class BundleProductAdd{
        .catch((error) => {
          console.error('Error:', error);
        });
-    }else if(!this.isEligibleForBundle) {
+    }else if(!isEligibleForBundle) {
       const body = JSON.stringify({
         id: `${this.bundleProductVariant}`,
         quantity: 0
@@ -1274,14 +1276,8 @@ class BundleProductAdd{
       fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
       .then((res) => {
         document.dispatchEvent(new Event("Cart:Clear"))
+        location.reload()
       })
-      document.querySelectorAll('.cart-item__name').forEach((item) => {
-        if(item.textContent.includes("Soft Winter Jacket")){
-            item.parentElement.parentElement.remove()
-        }
-     })
-
-     location.reload() 
     }
   }
 }
