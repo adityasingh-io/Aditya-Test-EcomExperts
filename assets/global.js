@@ -915,6 +915,7 @@ class VariantSelects extends HTMLElement {
         item.checked = true;
       }
     })
+    
   }
 
   updateMasterId() {
@@ -1189,15 +1190,18 @@ customElements.define('product-recommendations', ProductRecommendations);
   hideDefaultImage("product__media", true)
   hideDefaultImage("product-media-modal__content", false)
 
-  // If Unselected option available, select it by default
-  document.querySelectorAll("select option").forEach((option) => {
-    if(option.value === "Unselected"){
-      document.querySelector("select[name='options[Size]'").value = "Unselected"
-    }
+  document.querySelectorAll('.shown-radio-btn').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      
+        console.log(e.target.value)
+        document.querySelector('.hidden-dropdown-btn').value = e.target.value 
+    })
   })
 
+  // If Unselected option available, select it by default
   setTimeout(() => {
     document.querySelectorAll('.hidden-radio-btn')[0].click()
+    document.querySelectorAll('.trigger-option')[1].value = "Unselected"
   }, 500)
   
 })()
