@@ -909,6 +909,12 @@ class VariantSelects extends HTMLElement {
 
   updateOptions() {
     this.options = Array.from(this.querySelectorAll('select'), (select) => select.value);
+    
+    document.querySelectorAll('.hidden-radio-btn').forEach((item) => {
+      if(this.options[1] === item.value){
+        item.checked = true;
+      }
+    })
   }
 
   updateMasterId() {
@@ -1189,6 +1195,11 @@ customElements.define('product-recommendations', ProductRecommendations);
       document.querySelector("select[name='options[Size]'").value = "Unselected"
     }
   })
+
+  setTimeout(() => {
+    document.querySelectorAll('.hidden-radio-btn')[0].click()
+  }, 500)
+  
 })()
 
 
@@ -1205,7 +1216,9 @@ class BundleProductAdd{
   }
 
   init(){
-    this.addEventListener()
+    if (window.location.href.indexOf("cart") > -1) {
+      this.addEventListener()
+    }
   }
 
   addEventListener(){
