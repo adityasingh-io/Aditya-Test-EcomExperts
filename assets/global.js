@@ -1200,8 +1200,10 @@ customElements.define('product-recommendations', ProductRecommendations);
 
   // If Unselected option available, select it by default
   setTimeout(() => {
-    document.querySelectorAll('.hidden-radio-btn')[0].click()
-    document.querySelectorAll('.trigger-option')[1].value = "Unselected"
+    if(document.querySelectorAll('.hidden-radio-btn') != null){
+      document.querySelectorAll('.hidden-radio-btn')[0].click()
+      document.querySelectorAll('.trigger-option')[1].value = "Unselected"
+    }
   }, 500)
   
 })()
@@ -1236,7 +1238,6 @@ class BundleProductAdd{
       return response.json();
     })
     .then(data => {
-      console.log(item, item.id)
       data.items.forEach((item) => {
         
         if(item.id === this.handbagVariantID){
