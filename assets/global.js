@@ -1220,9 +1220,7 @@ class BundleProductAdd{
   }
 
   init(){
-    if (window.location.href.indexOf("cart") > -1) {
-      this.addEventListener()
-    }
+    this.addEventListener()
   }
 
   addEventListener(){
@@ -1231,7 +1229,6 @@ class BundleProductAdd{
   }
 
   fetchCart = () => {
-    console.log("triggered")
     fetch(window.Shopify.routes.root + 'cart.js', {
       method: 'GET'
     })
@@ -1239,7 +1236,7 @@ class BundleProductAdd{
       return response.json();
     })
     .then(data => {
-      
+      console.log(item, item.id)
       data.items.forEach((item) => {
         
         if(item.id === this.handbagVariantID){
@@ -1253,8 +1250,6 @@ class BundleProductAdd{
         }else {
           this.isBundleProductInCart = false;
         }
-
-        console.log(this.isEligibleForBundle, this.isBundleProductInCart)
       })
       this.checkHandbag(data, this.isEligibleForBundle, this.isBundleProductInCart)
     })
@@ -1293,7 +1288,9 @@ class BundleProductAdd{
       fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
       .then((res) => {
         document.dispatchEvent(new Event("Cart:Clear"))
-        location.reload()
+        if (window.location.href.indexOf("cart") > -1) {
+          location.reload()
+        }
       })
     }
   }
