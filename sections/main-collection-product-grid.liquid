@@ -155,6 +155,9 @@
               "
             >
               {%- for product in collection.products -%}
+                {% if product.tags contains 'hidden-product' %}
+                  {% comment %}leave it blank here because you dont want to show them{% endcomment %}
+                {% else %}
                 {% assign lazy_load = false %}
                 {%- if forloop.index > 2 -%}
                   {%- assign lazy_load = true -%}
@@ -178,6 +181,7 @@
                     section_id: section.id
                   %}
                 </li>
+                {% endif %}
               {%- endfor -%}
             </ul>
 
