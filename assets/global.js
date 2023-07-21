@@ -1175,38 +1175,6 @@ class ProductRecommendations extends HTMLElement {
 
 customElements.define('product-recommendations', ProductRecommendations);
 
-// Hide Product Default Image when Variants Image Present
-(() => {
-  function hideDefaultImage(mediaContainer, hideParent){
-    let altImageValue = "default-hide"
-    document.querySelectorAll(`.${mediaContainer} img`).forEach((img) => {
-      if(img.alt === altImageValue && hideParent){
-          img.parentElement.style.display = "none"
-      }else if(img.alt === altImageValue && !hideParent){
-          img.style.display = "none"
-      }
-    })
-  }
-  hideDefaultImage("product__media", true)
-  hideDefaultImage("product-media-modal__content", false)
-
-  document.querySelectorAll('.shown-radio-btn').forEach((item) => {
-    item.addEventListener('click', (e) => {
-      
-        console.log(e.target.value)
-        document.querySelector('.hidden-dropdown-btn').value = e.target.value 
-    })
-  })
-
-  // If Unselected option available, select it by default
-  setTimeout(() => {
-    if(document.querySelectorAll('.hidden-radio-btn') != null){
-      document.querySelectorAll('.hidden-radio-btn')[0].click()
-      document.querySelectorAll('.trigger-option')[1].value = "Unselected"
-    }
-  }, 500)
-  
-})()
 
 
 // Add Handbag Get Jacket Bundle Feature
@@ -1298,3 +1266,36 @@ class BundleProductAdd{
 }
 
 new BundleProductAdd()
+
+// Hide Product Default Image when Variants Image Present and Variant Picker Sync
+(() => {
+  function hideDefaultImage(mediaContainer, hideParent){
+    let altImageValue = "default-hide"
+    document.querySelectorAll(`.${mediaContainer} img`).forEach((img) => {
+      if(img.alt === altImageValue && hideParent){
+          img.parentElement.style.display = "none"
+      }else if(img.alt === altImageValue && !hideParent){
+          img.style.display = "none"
+      }
+    })
+  }
+  hideDefaultImage("product__media", true)
+  hideDefaultImage("product-media-modal__content", false)
+
+  document.querySelectorAll('.shown-radio-btn').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      
+        console.log(e.target.value)
+        document.querySelector('.hidden-dropdown-btn').value = e.target.value 
+    })
+  })
+
+  // If Unselected option available, select it by default
+  setTimeout(() => {
+    if(document.querySelectorAll('.hidden-radio-btn') != undefined || document.querySelectorAll('.hidden-radio-btn') != null){
+      document.querySelectorAll('.hidden-radio-btn')[0].click()
+      document.querySelectorAll('.trigger-option')[1].value = "Unselected"
+    }
+  }, 500)
+  
+})()
