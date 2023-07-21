@@ -915,7 +915,9 @@ class VariantSelects extends HTMLElement {
         item.checked = true;
       }
     })
-    
+
+    let option = this.options[1]
+    document.dispatchEvent(new CustomEvent('variantChange', { detail: option }));
   }
 
   updateMasterId() {
@@ -944,8 +946,9 @@ class VariantSelects extends HTMLElement {
   }
 
   updateURL() {
+    console.log(this.currentVariant.option2)
     if (!this.currentVariant || this.dataset.updateUrl === 'false') return;
-    window.history.replaceState({}, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
+      window.history.replaceState({}, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
   }
 
   updateShareUrl() {
@@ -1054,10 +1057,15 @@ class VariantSelects extends HTMLElement {
           inventoryDestination.classList.toggle('visibility-hidden', inventorySource.innerText === '');
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
-        this.toggleAddButton(
-          addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
-          window.variantStrings.soldOut
-        );
+        if(this.currentVariant.option2 === 'Unselected'){
+          this.toggleAddButton()
+        }else {
+          this.toggleAddButton(
+            addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
+            window.variantStrings.soldOut
+          );
+        }
+        
 
         publish(PUB_SUB_EVENTS.variantChange, {
           data: {
@@ -1130,6 +1138,9 @@ class VariantRadios extends VariantSelects {
     this.options = fieldsets.map((fieldset) => {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
     });
+
+    let option = this.options[1]
+    document.dispatchEvent(new CustomEvent('variantChange', { detail: option }));
   }
 }
 
@@ -1192,8 +1203,6 @@ customElements.define('product-recommendations', ProductRecommendations);
 
   document.querySelectorAll('.shown-radio-btn').forEach((item) => {
     item.addEventListener('click', (e) => {
-      
-        console.log(e.target.value)
         document.querySelector('.hidden-dropdown-btn').value = e.target.value 
     })
   })
@@ -1203,6 +1212,7 @@ customElements.define('product-recommendations', ProductRecommendations);
     if(document.querySelectorAll('.hidden-radio-btn').length > 0){
       document.querySelectorAll('.hidden-radio-btn')[0].click()
       document.querySelectorAll('.trigger-option')[1].value = "Unselected"
+      document.querySelector(".product-form__submit").disabled = true;
     }
   }, 500)
   
