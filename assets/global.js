@@ -909,6 +909,15 @@ class VariantSelects extends HTMLElement {
 
   updateOptions() {
     this.options = Array.from(this.querySelectorAll('select'), (select) => select.value);
+    
+    document.querySelectorAll('.hidden-radio-btn').forEach((item) => {
+      if(this.options[1] === item.value){
+        item.checked = true;
+      }
+    })
+
+    let option = this.options[1]
+    document.dispatchEvent(new CustomEvent('variantChange', { detail: option }));
   }
 
   updateMasterId() {
@@ -937,8 +946,9 @@ class VariantSelects extends HTMLElement {
   }
 
   updateURL() {
+    console.log(this.currentVariant.option2)
     if (!this.currentVariant || this.dataset.updateUrl === 'false') return;
-    window.history.replaceState({}, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
+      window.history.replaceState({}, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
   }
 
   updateShareUrl() {
@@ -1047,10 +1057,15 @@ class VariantSelects extends HTMLElement {
           inventoryDestination.classList.toggle('visibility-hidden', inventorySource.innerText === '');
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
-        this.toggleAddButton(
-          addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
-          window.variantStrings.soldOut
-        );
+        if(this.currentVariant.option2 === 'Unselected'){
+          this.toggleAddButton()
+        }else {
+          this.toggleAddButton(
+            addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
+            window.variantStrings.soldOut
+          );
+        }
+        
 
         publish(PUB_SUB_EVENTS.variantChange, {
           data: {
@@ -1123,6 +1138,9 @@ class VariantRadios extends VariantSelects {
     this.options = fieldsets.map((fieldset) => {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
     });
+
+    let option = this.options[1]
+    document.dispatchEvent(new CustomEvent('variantChange', { detail: option }));
   }
 }
 
@@ -1167,3 +1185,118 @@ class ProductRecommendations extends HTMLElement {
 }
 
 customElements.define('product-recommendations', ProductRecommendations);
+
+// Hide Product Default Image when Variants Image Present and Variant Picker Sync
+(() => {
+  function hideDefaultImage(mediaContainer, hideParent){
+    let altImageValue = "default-hide"
+    document.querySelectorAll(`.${mediaContainer} img`).forEach((img) => {
+      if(img.alt === altImageValue && hideParent){
+          img.parentElement.style.display = "none"
+      }else if(img.alt === altImageValue && !hideParent){
+          img.style.display = "none"
+      }
+    })
+  }
+  hideDefaultImage("product__media", true)
+  hideDefaultImage("product-media-modal__content", false)
+
+  document.querySelectorAll('.shown-radio-btn').forEach((item) => {
+    item.addEventListener('click', (e) => {
+        document.querySelector('.hidden-dropdown-btn').value = e.target.value 
+    })
+  })
+
+  // If Unselected option available, select it by default
+  setTimeout(() => {
+    if(document.querySelectorAll('.hidden-radio-btn').length > 0){
+      document.querySelectorAll('.hidden-radio-btn')[0].click()
+      document.querySelectorAll('.trigger-option')[1].value = "Unselected"
+      document.querySelector(".product-form__submit").disabled = true;
+    }
+  }, 500)
+  
+})()
+
+
+// Add Handbag Get Jacket Bundle Feature
+class BundleProductAdd{
+  constructor(){
+    this.init()
+    this.handbagVariantID = 45851624276270
+    this.bundleProductVariant = 45850288521518
+    this.isEligibleForBundle;
+    this.isBundleProductInCart;
+
+    this.fetchCart = this.fetchCart.bind(this)
+  }
+
+  init(){
+    this.addEventListener()
+  }
+
+  addEventListener(){
+    document.addEventListener('Cart:Added', this.fetchCart)
+    document.addEventListener('Cart:Updated', this.fetchCart)
+  }
+
+  fetchCart = () => {
+    fetch(window.Shopify.routes.root + 'cart.js', {
+      method: 'GET'
+    })
+    .then(response => { 
+      return response.json();
+    })
+    .then(data => {
+      
+      this.checkHandbag(data)
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    })
+  }
+
+  checkHandbag(data){
+    let isEligibleForBundle = this.isEligibleForBundle
+    let isBundleProductInCart = this.isBundleProductInCart
+    isEligibleForBundle = data.items.some((item) => item.id === this.handbagVariantID)
+    isBundleProductInCart = data.items.some((item) => item.id === this.bundleProductVariant)
+
+    if(isEligibleForBundle && !isBundleProductInCart){
+      let formData = {
+        'items': [{
+         'id': this.bundleProductVariant,
+         'quantity': 1
+         }]
+       };
+       
+       fetch(window.Shopify.routes.root + 'cart/add.js', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(formData)
+       })
+       .then(response => {
+         return response.json();
+       })
+       .catch((error) => {
+         console.error('Error:', error);
+       });
+    }else if(!isEligibleForBundle) {
+      const body = JSON.stringify({
+        id: `${this.bundleProductVariant}`,
+        quantity: 0
+      });
+      fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
+      .then((res) => {
+        document.dispatchEvent(new Event("Cart:Clear"))
+        if (window.location.href.indexOf("cart") > -1) {
+          location.reload()
+        }
+      })
+    }
+  }
+}
+
+new BundleProductAdd()
